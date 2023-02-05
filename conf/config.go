@@ -21,6 +21,13 @@ type Config struct {
 		Http   int
 	}
 
+	Common struct {
+		SwgHost        string
+		ServerFullHost string
+		ServiceId      string
+		Priv           string
+	}
+
 	Repositories map[string]map[string]interface{}
 }
 

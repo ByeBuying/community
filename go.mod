@@ -3,8 +3,11 @@ module community
 go 1.19
 
 require (
+	github.com/gin-gonic/gin v1.6.3
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416
 	go-common/klay v0.0.0-00010101000000-000000000000
+	go.mongodb.org/mongo-driver v1.7.4
 	golang.org/x/sync v0.1.0
 )
 
@@ -27,7 +30,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.12 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
-	github.com/gin-gonic/gin v1.6.3 // indirect
+	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.2.0 // indirect
@@ -73,7 +76,10 @@ require (
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.16.0 // indirect
-	go.mongodb.org/mongo-driver v1.7.4 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/scram v1.0.2 // indirect
+	github.com/xdg-go/stringprep v1.0.2 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect
@@ -87,6 +93,7 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/fatih/set.v0 v0.1.0 // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect

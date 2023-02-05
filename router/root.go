@@ -3,6 +3,7 @@ package router
 import (
 	config "community/conf"
 	"community/controller"
+	"community/util/recovery"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,7 +47,7 @@ func (p *Router) Idx() *gin.Engine {
 	e.Use(recovery.GinRecovery(p.config.Common.ServiceId))
 	e.Use(CORS())
 
-	e.GET("/health", p.healthControl.Check)
+	//e.GET("/health", p.healthControl.Check)
 
 	//if p.config.Common.ServiceId == "alpha" {
 	//	e.GET("/swagger/:any", ginSwagger.WrapHandler(swaggerFiles.Handler))
