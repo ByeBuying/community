@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"fmt"
+	"go-common/klay/elog"
+
 	config "community/conf"
 	"community/model"
-	"fmt"
+
 	"github.com/gin-gonic/gin"
-	"go-common/klay/elog"
 )
 
 type Community struct {
@@ -29,6 +31,12 @@ func NewCommunity(h *Controller, rep *model.Repositories) *Community {
 	return r
 }
 
+// Get
+// @Summary Test
+// @Description Test
+// @Accept  json
+// @Produce  json
+// @Router /test [get]
 func (p *Community) GetTest(c *gin.Context) {
 	fmt.Println("aaa")
 	elog.Error("error", "Test")

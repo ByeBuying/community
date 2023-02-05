@@ -4,7 +4,12 @@ import (
 	config "community/conf"
 	"community/controller"
 	"community/util/recovery"
+
+	"community/docs"
+
 	"github.com/gin-gonic/gin"
+	swgFiles "github.com/swaggo/files"
+	ginSwg "github.com/swaggo/gin-swagger"
 )
 
 type Router struct {
@@ -38,7 +43,7 @@ func CORS() gin.HandlerFunc {
 }
 
 func (p *Router) Idx() *gin.Engine {
-	//e := gin.New()
+	// e := gin.New()
 	if p.config.Common.ServiceId == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -47,7 +52,13 @@ func (p *Router) Idx() *gin.Engine {
 	e.Use(recovery.GinRecovery(p.config.Common.ServiceId))
 	e.Use(CORS())
 
-	//e.GET("/health", p.healthControl.Check)
+	// e.GET("/health", p.healthControl.Check)
+
+	// swagger
+	docs.SwaggerInfo.Host = "localhost:8080" // swagger 정보 등록
+	docs.SwaggerInfo.Title = "community"
+	url := ginSwg.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definitionv
+	e.GET("/swagger/:any", ginSwg.WrapHandler(swgFiles.Handler, url))
 
 	//if p.config.Common.ServiceId == "alpha" {
 	//	e.GET("/swagger/:any", ginSwagger.WrapHandler(swaggerFiles.Handler))
