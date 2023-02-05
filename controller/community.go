@@ -3,6 +3,8 @@ package controller
 import (
 	config "community/conf"
 	"community/model"
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"go-common/klay/elog"
 )
 
@@ -25,4 +27,10 @@ func NewCommunity(h *Controller, rep *model.Repositories) *Community {
 	}
 
 	return r
+}
+
+func (p *Community) GetTest(c *gin.Context) {
+	fmt.Println("aaa")
+	elog.Error("error", "Test")
+	elog.Info("api test", "connect")
 }

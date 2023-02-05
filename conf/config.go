@@ -28,6 +28,18 @@ type Config struct {
 		Priv           string
 	}
 
+	Log struct {
+		Terminal struct {
+			Use       bool
+			Verbosity int
+		}
+		File struct {
+			Use       bool
+			Verbosity int
+			FileName  string
+		}
+	}
+
 	Repositories map[string]map[string]interface{}
 }
 

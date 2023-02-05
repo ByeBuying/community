@@ -54,6 +54,7 @@ func (p *Router) Idx() *gin.Engine {
 	//}
 
 	// api path
+	e.GET("/test", p.communityControl.GetTest)
 
 	return e
 }

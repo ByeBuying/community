@@ -8,8 +8,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"go-common/klay/elog"
 	"golang.org/x/sync/errgroup"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -31,12 +33,22 @@ func main() {
 		config.Port.Http = *httpFlag
 	}
 
+	elog.InitLog(elog.Config{
+		UseTerminal:       config.Log.Terminal.Use,
+		UseFile:           config.Log.File.Use,
+		VerbosityTerminal: config.Log.Terminal.Verbosity,
+		VerbosityFile:     config.Log.File.Verbosity,
+		FilePath:          path.Join(config.Datadir.Root, config.Datadir.Log, config.Log.File.FileName),
+	})
+
 	// model
 	if repositories, err := model.NewRepositories(config); err != nil {
 		panic(err)
 	} else if controller, err := ctl.New(config, config.Port.Http, repositories); err != nil {
 		panic(fmt.Errorf("controller.New > %v", err))
 	} else if rt, err := router.NewRouter(config, controller); err != nil {
+		panic(fmt.Errorf("router.NewRouter > %v", err))
+	} else {
 		mapi := &http.Server{
 			Addr:           config.Port.Server,
 			Handler:        rt.Idx(),
