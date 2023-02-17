@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+
 	config "community/conf"
 	"community/controller"
 	"community/util/recovery"
@@ -16,6 +18,7 @@ type Router struct {
 	config *config.Config
 
 	communityControl *controller.Community
+	friendControl    *controller.Friend
 }
 
 func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, error) {
@@ -64,7 +67,12 @@ func (p *Router) Idx() *gin.Engine {
 	//	e.GET("/swagger/:any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//}
 
-	// api path
+	friend := e.Group("friend/v1")
+	{
+		fmt.Println(friend)
+		friend.GET("/ok", p.friendControl.GetTest)
+		friend.POST("post", p.friendControl.CreatePost)
+	} // api path
 	e.GET("/test", p.communityControl.GetTest)
 
 	return e

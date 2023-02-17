@@ -1,9 +1,11 @@
 package model
 
 import (
-	"community/conf"
 	"context"
 	"go-common/klay/elog"
+
+	"community/conf"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,13 +25,13 @@ func NewCommunityDB(config *conf.Config, root *Repositories) (IRepository, error
 		start: make(chan struct{}),
 	}
 
-	credential := options.Credential{
-		Username: cfg["username"].(string),
-		Password: cfg["pass"].(string),
-	}
+	// credential := options.Credential{
+	// 	Username: cfg["username"].(string),
+	// 	Password: cfg["pass"].(string),
+	// }
 
 	var err error
-	if r.client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(cfg["datasource"].(string)).SetAuth(credential)); err != nil {
+	if r.client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(cfg["datasource"].(string))); err != nil {
 		return nil, err
 	} else if err := r.client.Ping(context.Background(), nil); err != nil {
 		return nil, err
