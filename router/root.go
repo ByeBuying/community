@@ -66,7 +66,10 @@ func (p *Router) Idx() *gin.Engine {
 	//if p.config.Common.ServiceId == "alpha" {
 	//	e.GET("/swagger/:any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//}
-
+	e.GET("/image", func(c *gin.Context) {
+		c.File("./public/image/test.png")
+		// c.JSON(200, gin.H{"result": "ok"})
+	})
 	friend := e.Group("friend/v1")
 	{
 		fmt.Println(friend)

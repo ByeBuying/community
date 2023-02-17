@@ -56,7 +56,7 @@ func (p *Friend) CreatePost(c *gin.Context) {
 		return
 	}
 	// 파일 저장 경로를 지정한다.
-	dst := "./image/" + file.Filename
+	dst := "./" + file.Filename
 
 	// 파일을 업로드한다.
 	if err := c.SaveUploadedFile(file, dst); err != nil {
