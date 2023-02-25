@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"go-common/klay/elog"
 	"net/http"
@@ -41,7 +42,7 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 // @Produce  json
 // @Router /GetPost [get]
 func (p *Friend) GetPost(c *gin.Context) {
-	p.communityDB
+	p.communityDB.Find()
 	c.JSON(200, gin.H{"result": "ok`"})
 }
 
@@ -52,8 +53,13 @@ func (p *Friend) UpdatePost(c *gin.Context) {
 }
 
 func (p *Friend) DeletePost(c *gin.Context) {
-	descripiton := c.PostForm("descripiton")
-	c.JSON(200, gin.H{"result": descripiton})
+	id := c.Param("id")
+	result, err := p.communityDB.DeleteOneById(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": errors.New("error")})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func (p *Friend) CreatePost(c *gin.Context) {

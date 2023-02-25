@@ -2,10 +2,15 @@ package model
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"go-common/klay/elog"
+	"time"
 
 	"community/conf"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -56,4 +61,59 @@ func (p *CommunityDB) Start() error {
 		close(p.start)
 		return
 	}()
+}
+
+func (p *CommunityDB) Find() {
+	filter := bson.D{{}}
+	p.collectionPostInfo.Find(context.TODO(), filter)
+}
+
+func (p *CommunityDB) DeleteOneById(id string) (bool, error) {
+	uuid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+	filter := bson.M{
+		"_id": uuid,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"deleted_at": time.Now(),
+		},
+	}
+	// softDelete
+	res, err := p.collectionPostInfo.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	if res.ModifiedCount == 1 {
+		return true, nil
+	}
+	return false, errors.New("error")
+}
+
+func (p *CommunityDB) UpdateOneById(id string, description string) (bool, error) {
+	uuid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+	filter := bson.M{
+		"_id": uuid,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"description": description,
+		},
+	}
+	// softDelete
+	res, err := p.collectionPostInfo.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	if res.ModifiedCount == 1 {
+		return true, nil
+	}
+	return false, errors.New("error")
 }
