@@ -1,8 +1,6 @@
 package router
 
 import (
-	"fmt"
-
 	config "community/conf"
 	"community/controller"
 	"community/util/recovery"
@@ -72,9 +70,11 @@ func (p *Router) Idx() *gin.Engine {
 	})
 	friend := e.Group("friend/v1")
 	{
-		fmt.Println(friend)
-		friend.GET("/ok", p.friendControl.GetTest)
+
+		friend.GET("/post", p.friendControl.GetPost)
 		friend.POST("post", p.friendControl.CreatePost)
+		friend.PUT("post/:id", p.friendControl.UpdatePost)
+		friend.DELETE("post/:id", p.friendControl.DeletePost)
 	} // api path
 	e.GET("/test", p.communityControl.GetTest)
 

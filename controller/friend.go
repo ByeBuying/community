@@ -35,22 +35,31 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 }
 
 // Get
-// @Summary Test
-// @Description Test
+// @Summary GetPost
+// @Description GetPost
 // @Accept  json
 // @Produce  json
-// @Router /test [get]
-func (p *Friend) GetTest(c *gin.Context) {
+// @Router /GetPost [get]
+func (p *Friend) GetPost(c *gin.Context) {
+	p.communityDB
 	c.JSON(200, gin.H{"result": "ok`"})
-	// fmt.Println("aaa")
-	// elog.Error("error", "Test")
-	// elog.Info("api test", "connect")
+}
+
+func (p *Friend) UpdatePost(c *gin.Context) {
+	id := c.Param("id")
+	descripiton := c.PostForm("descripiton")
+	c.JSON(200, gin.H{"result": descripiton, id: id})
+}
+
+func (p *Friend) DeletePost(c *gin.Context) {
+	descripiton := c.PostForm("descripiton")
+	c.JSON(200, gin.H{"result": descripiton})
 }
 
 func (p *Friend) CreatePost(c *gin.Context) {
 	// shouldbind로 묶어볼 수 있으면 묶기
 	author := c.PostForm("author")
-	text := c.PostForm("text")
+	descripiton := c.PostForm("text")
 	// Get image
 	image, err := c.FormFile("file")
 	if err != nil {
@@ -74,6 +83,6 @@ func (p *Friend) CreatePost(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"author": author,
 		"image":  "123",
-		"text":   text,
+		"text":   descripiton,
 	})
 }
