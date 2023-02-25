@@ -16,7 +16,10 @@ type Router struct {
 	config *config.Config
 
 	communityControl *controller.Community
-	reviewControl    *controller.Review
+
+	friendControl *controller.Friend
+
+	reviewControl *controller.Review
 }
 
 func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, error) {
@@ -64,6 +67,23 @@ func (p *Router) Idx() *gin.Engine {
 	//if p.config.Common.ServiceId == "alpha" {
 	//	e.GET("/swagger/:any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//}
+	e.GET("/image", func(c *gin.Context) {
+		c.File("./public/image/test.png")
+		// c.JSON(200, gin.H{"result": "ok"})
+	})
+	friend := e.Group("friend/v1")
+	{
+		// 1. 기대코드보고 리팩토리 진행
+		// 2. S3 공통모듈로 빼기 - 완료
+		// 3. 좋아요 / 댓글 구현
+		// 4. 스웨거 정리
+		// 5. 테스트코드 정리하고 해보기
+
+		friend.GET("/post", p.friendControl.GetPost)
+		friend.POST("post", p.friendControl.CreatePost)
+		friend.PUT("post/:id", p.friendControl.UpdatePost)
+		friend.DELETE("post/:id", p.friendControl.DeletePost)
+	} // api path
 
 	// api path
 
@@ -82,7 +102,6 @@ func (p *Router) Idx() *gin.Engine {
 		review.POST("", p.reviewControl.CreatePostInfo)
 		review.PUT("/:id", p.reviewControl.UpdatePostInfo)
 		review.PATCH("/:id", p.reviewControl.DeletePostInfo)
-
 		review.POST("/like/:id", p.reviewControl.ChangeLike)
 	}
 

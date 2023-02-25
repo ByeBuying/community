@@ -1,15 +1,20 @@
 package model
 
 import (
-	"community/conf"
-	"community/protocol"
 	"context"
+	"errors"
+	"fmt"
 	"go-common/klay/elog"
+	"time"
+
+	"community/protocol"
+
+	"community/conf"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type CommunityDB struct {
@@ -28,13 +33,13 @@ func NewCommunityDB(config *conf.Config, root *Repositories) (IRepository, error
 		start: make(chan struct{}),
 	}
 
-	credential := options.Credential{
-		Username: cfg["username"].(string),
-		Password: cfg["pass"].(string),
-	}
+	// credential := options.Credential{
+	// 	Username: cfg["username"].(string),
+	// 	Password: cfg["pass"].(string),
+	// }
 
 	var err error
-	if r.client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(cfg["datasource"].(string)).SetAuth(credential)); err != nil {
+	if r.client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(cfg["datasource"].(string))); err != nil {
 		return nil, err
 	} else if err := r.client.Ping(context.Background(), nil); err != nil {
 		return nil, err
@@ -62,6 +67,63 @@ func (p *CommunityDB) Start() error {
 	}()
 }
 
+func (p *CommunityDB) Find() {
+	//! 삭제안되것
+	//! 정렬
+	filter := bson.D{{}}
+	p.collectionPostInfo.Find(context.TODO(), filter)
+}
+
+func (p *CommunityDB) DeleteOneById(id string) (bool, error) {
+	uuid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+	filter := bson.M{
+		"_id": uuid,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"deleted_at": time.Now(),
+		},
+	}
+	// softDelete
+	res, err := p.collectionPostInfo.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	if res.ModifiedCount == 1 {
+		return true, nil
+	}
+	return false, errors.New("error")
+}
+
+func (p *CommunityDB) UpdateOneById(id string, description string) (bool, error) {
+	uuid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+	filter := bson.M{
+		"_id": uuid,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"description": description,
+		},
+	}
+	// softDelete
+	res, err := p.collectionPostInfo.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	if res.ModifiedCount == 1 {
+		return true, nil
+	}
+	return false, errors.New("error")
+}
+
 func (p *CommunityDB) CreatePost(req protocol.PostWriteReq) error {
 	//result := protocol.PostInfo{}
 	//_, err := p.collectionPostInfo.InsertOne(context.Background(), )
@@ -85,7 +147,6 @@ func (p *CommunityDB) GetReviewList(result *[]protocol.ReviewPost) error {
 }
 
 func (p *CommunityDB) GetReviewDetail(id string, result *protocol.ReviewPost) error {
-
 	convertId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -102,11 +163,9 @@ func (p *CommunityDB) GetReviewDetail(id string, result *protocol.ReviewPost) er
 	} else {
 		return nil
 	}
-
 }
 
 func (p *CommunityDB) CreateReviewPost(req protocol.ReviewPostReq) error {
-
 	post := protocol.ReviewPost{
 		Id:       primitive.NewObjectID(),
 		Title:    req.Title,
@@ -125,7 +184,6 @@ func (p *CommunityDB) CreateReviewPost(req protocol.ReviewPostReq) error {
 	} else {
 		return nil
 	}
-
 }
 
 func (p *CommunityDB) UpdateReviewPost(id string, req protocol.ReviewPostReq) error {
@@ -153,7 +211,6 @@ func (p *CommunityDB) UpdateReviewPost(id string, req protocol.ReviewPostReq) er
 	} else {
 		return nil
 	}
-
 }
 
 func (p *CommunityDB) DeleteReviewPost(id string) error {
