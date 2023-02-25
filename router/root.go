@@ -16,12 +16,14 @@ type Router struct {
 	config *config.Config
 
 	communityControl *controller.Community
+	reviewControl    *controller.Review
 }
 
 func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, error) {
 	r := &Router{
 		config:           config,
 		communityControl: ctl.GetCommunityHandler(),
+		reviewControl:    ctl.GetReviewHandler(),
 	}
 
 	return r, nil
@@ -53,7 +55,6 @@ func (p *Router) Idx() *gin.Engine {
 	e.Use(CORS())
 
 	// e.GET("/health", p.healthControl.Check)
-
 	// swagger
 	docs.SwaggerInfo.Host = "localhost:8080" // swagger 정보 등록
 	docs.SwaggerInfo.Title = "community"
@@ -65,7 +66,25 @@ func (p *Router) Idx() *gin.Engine {
 	//}
 
 	// api path
-	e.GET("/test", p.communityControl.GetTest)
+
+	// community
+	community := e.Group("/napi/v1/community")
+	{
+		community.POST("/post", p.communityControl.Post)
+	}
+
+	// review
+	review := e.Group("/napi/v1/review")
+	{
+		// TODO middleware 추가
+		review.GET("/list", p.reviewControl.GetPostList)
+		review.GET("/:id", p.reviewControl.GetPostDetail)
+		review.POST("", p.reviewControl.CreatePostInfo)
+		review.PUT("/:id", p.reviewControl.UpdatePostInfo)
+		review.PATCH("/:id", p.reviewControl.DeletePostInfo)
+
+		review.POST("/like/:id", p.reviewControl.ChangeLike)
+	}
 
 	return e
 }

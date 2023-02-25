@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"fmt"
+	"community/protocol"
 	"go-common/klay/elog"
+	"net/http"
 
 	config "community/conf"
 	"community/model"
@@ -31,14 +32,13 @@ func NewCommunity(h *Controller, rep *model.Repositories) *Community {
 	return r
 }
 
-// Get
-// @Summary Test
-// @Description Test
-// @Accept  json
-// @Produce  json
-// @Router /test [get]
-func (p *Community) GetTest(c *gin.Context) {
-	fmt.Println("aaa")
-	elog.Error("error", "Test")
-	elog.Info("api test", "connect")
+// @Router /napi/v1/community/post [post]
+func (p *Community) Post(c *gin.Context) {
+
+	req := protocol.PostWriteReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		p.ctl.RespError(c, &req, http.StatusUnprocessableEntity, "ShouldBindJSON", err)
+		return
+	}
+
 }
