@@ -31,6 +31,7 @@ func NewRepositories(cfg *conf.Config) (*Repositories, error) {
 		config      *conf.Config
 	}{
 		{NewCommunityDB, cfg},
+		//{NewProdu, cfg},
 	} {
 		if err := r.Register(c.constructor, c.config); err != nil {
 			return nil, err

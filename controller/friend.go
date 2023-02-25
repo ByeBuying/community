@@ -66,7 +66,8 @@ func (p *Friend) CreatePost(c *gin.Context) {
 	// shouldbind로 묶어볼 수 있으면 묶기
 	author := c.PostForm("author")
 	descripiton := c.PostForm("text")
-	// Get image
+
+	// Get image -> images
 	image, err := c.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
