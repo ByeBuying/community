@@ -27,6 +27,7 @@ func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, erro
 		config:           config,
 		communityControl: ctl.GetCommunityHandler(),
 		reviewControl:    ctl.GetReviewHandler(),
+		friendControl:    ctl.GetFriendHandler(),
 	}
 
 	return r, nil

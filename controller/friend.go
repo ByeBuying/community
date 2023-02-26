@@ -46,10 +46,8 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 func (r *Friend) GetFriendPost(c *gin.Context) {
 	var friendPostList []protocol.FriendPost
 
-	fmt.Println("DB")
 	err := r.communityDB.GetFriendPostList(&friendPostList)
 	if err != nil {
-		fmt.Println(err, "err")
 		r.ctl.RespError(c, nil, http.StatusNotFound, err)
 		return
 	}

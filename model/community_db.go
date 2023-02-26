@@ -70,7 +70,7 @@ func (p *CommunityDB) Start() error {
 }
 
 func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPost) error {
-	fmt.Println("hello")
+
 	filter := bson.M{
 		"stat": 1,
 	}
