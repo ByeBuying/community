@@ -31,6 +31,7 @@ func NewRepositories(cfg *conf.Config) (*Repositories, error) {
 		constructor RepositoryConstructor
 		config      *conf.Config
 	}{
+		{NewRedisDB, cfg},
 		{NewCommunityDB, cfg},
 		//{NewProdu, cfg},
 	} {
