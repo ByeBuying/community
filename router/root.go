@@ -95,7 +95,7 @@ func (p *Router) Idx() *gin.Engine {
 	}
 
 	// review
-	review := e.Group("/napi/v1/review")
+	review := e.Group("/review/v1/post")
 	{
 		// TODO middleware 추가
 		review.GET("/list", p.reviewControl.GetPostList)
