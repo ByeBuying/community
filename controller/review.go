@@ -1,12 +1,15 @@
 package controller
 
 import (
+	"fmt"
+	"go-common/klay/elog"
+	"net/http"
+
 	config "community/conf"
 	"community/model"
 	"community/protocol"
+
 	"github.com/gin-gonic/gin"
-	"go-common/klay/elog"
-	"net/http"
 )
 
 type Review struct {
@@ -40,21 +43,20 @@ func NewReview(h *Controller, rep *model.Repositories) *Review {
 // @Success 200 {object} protocol.ReviewListResp
 // @Router /napi/v1/review/list [get]
 func (r *Review) GetPostList(c *gin.Context) {
-
 	var reviewInfoList []protocol.ReviewPost
 
+	fmt.Println(&reviewInfoList, "review")
 	err := r.communityDB.GetReviewList(&reviewInfoList)
 	if err != nil {
 		r.ctl.RespError(c, nil, http.StatusNotFound, err)
 		return
 	}
 
-	//성공 응답
+	// 성공 응답
 	r.ctl.RespOK(c, &protocol.ReviewListResp{
 		RespHeader: protocol.NewRespHeader(protocol.Success),
 		ReviewList: reviewInfoList,
 	})
-
 }
 
 // GetPostDetail
@@ -80,7 +82,6 @@ func (r *Review) GetPostDetail(c *gin.Context) {
 		RespHeader:   protocol.NewRespHeader(protocol.Success),
 		ReviewDetail: reviewInfo,
 	})
-
 }
 
 // CreatePostInfo
@@ -99,7 +100,7 @@ func (r *Review) CreatePostInfo(c *gin.Context) {
 		return
 	}
 
-	//TODO 유저 레디스 값 체크
+	// TODO 유저 레디스 값 체크
 
 	// TODO 유효성 체크
 
@@ -149,7 +150,6 @@ func (r *Review) UpdatePostInfo(c *gin.Context) {
 		RespHeader: protocol.NewRespHeader(protocol.Success),
 		Stat:       1,
 	})
-
 }
 
 // DeletePostInfo
@@ -205,9 +205,7 @@ func (r *Review) ChangeLike(c *gin.Context) {
 	// review post info 에서 likeusers 에서 해당 유저의 id find
 	// 없으면 +1
 	// 있으면 -1
-
 }
 
 func (r *Review) Comment(c *gin.Context) {
-
 }
