@@ -9,6 +9,7 @@ import (
 
 	config "community/conf"
 	"community/model"
+	"community/protocol"
 	aws "community/util"
 
 	"github.com/gin-gonic/gin"
@@ -35,15 +36,27 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 	return r
 }
 
-// Get
-// @Summary GetPost
-// @Description GetPost
-// @Accept  json
-// @Produce  json
-// @Router /GetPost [get]
-func (p *Friend) GetPost(c *gin.Context) {
-	p.communityDB.Find()
-	c.JSON(200, gin.H{"result": "ok`"})
+// GetFriendPostList
+// @Summary 친구찾기 전체 게시물 조회
+// @Tags friend
+// @Accept json
+// @Produce json
+// @Success 200 {object} protocol.FriendPostListResp
+// @Router /friend/v1/post/list [get]
+func (r *Friend) GetFriendPost(c *gin.Context) {
+	var friendPostList []protocol.FriendPost
+
+	err := r.communityDB.GetFriendPostList(&friendPostList)
+	if err != nil {
+		r.ctl.RespError(c, nil, http.StatusNotFound, err)
+		return
+	}
+
+	// 성공 응답
+	r.ctl.RespOK(c, &protocol.FriendPostListResp{
+		RespHeader:     protocol.NewRespHeader(protocol.Success),
+		FriendPostList: friendPostList,
+	})
 }
 
 func (p *Friend) UpdatePost(c *gin.Context) {

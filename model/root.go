@@ -1,11 +1,12 @@
 package model
 
 import (
-	"community/conf"
 	"fmt"
 	"go-common/klay/elog"
 	"reflect"
 	"sync"
+
+	"community/conf"
 )
 
 type IRepository interface {

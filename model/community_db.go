@@ -24,6 +24,7 @@ type CommunityDB struct {
 	collectionFileInfo    *mongo.Collection
 	collectionCommentInfo *mongo.Collection
 	collectionReviewInfo  *mongo.Collection
+	collectionFriendInfo  *mongo.Collection
 	start                 chan struct{}
 }
 
@@ -49,6 +50,7 @@ func NewCommunityDB(config *conf.Config, root *Repositories) (IRepository, error
 		r.collectionFileInfo = db.Collection("file_info")
 		r.collectionCommentInfo = db.Collection("comment_info")
 		r.collectionReviewInfo = db.Collection("review_info")
+		r.collectionFriendInfo = db.Collection("friend_info")
 	}
 
 	elog.Trace("load repository : CommunityDB")
@@ -67,11 +69,21 @@ func (p *CommunityDB) Start() error {
 	}()
 }
 
-func (p *CommunityDB) Find() {
-	//! 삭제안되것
-	//! 정렬
-	filter := bson.D{{}}
-	p.collectionPostInfo.Find(context.TODO(), filter)
+func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPost) error {
+
+	filter := bson.M{
+		"stat": 1,
+	}
+	sort := bson.D{{"create_at", 1}}
+	findOptions := options.Find().SetSort(sort)
+
+	if cursor, err := p.collectionFriendInfo.Find(context.Background(), filter, findOptions); err != nil {
+		return err
+	} else {
+		defer cursor.Close(context.Background())
+		cursor.All(context.Background(), result)
+		return nil
+	}
 }
 
 func (p *CommunityDB) DeleteOneById(id string) (bool, error) {
@@ -131,6 +143,7 @@ func (p *CommunityDB) CreatePost(req protocol.PostWriteReq) error {
 }
 
 func (p *CommunityDB) GetReviewList(result *[]protocol.ReviewPost) error {
+	fmt.Println("reivew hello")
 	filter := bson.M{
 		"stat": 1,
 	}

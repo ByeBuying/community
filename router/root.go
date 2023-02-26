@@ -27,6 +27,7 @@ func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, erro
 		config:           config,
 		communityControl: ctl.GetCommunityHandler(),
 		reviewControl:    ctl.GetReviewHandler(),
+		friendControl:    ctl.GetFriendHandler(),
 	}
 
 	return r, nil
@@ -79,7 +80,7 @@ func (p *Router) Idx() *gin.Engine {
 		// 4. 스웨거 정리
 		// 5. 테스트코드 정리하고 해보기
 
-		friend.GET("/post", p.friendControl.GetPost)
+		friend.GET("/post/list", p.friendControl.GetFriendPost)
 		friend.POST("post", p.friendControl.CreatePost)
 		friend.PUT("post/:id", p.friendControl.UpdatePost)
 		friend.DELETE("post/:id", p.friendControl.DeletePost)
