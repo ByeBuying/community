@@ -1,10 +1,11 @@
 package model
 
 import (
-	config "community/conf"
-	"crypto/tls"
-	"github.com/go-redis/redis/v7"
 	"go-common/klay/elog"
+
+	config "community/conf"
+
+	"github.com/go-redis/redis/v7"
 )
 
 type RedisDB struct {
@@ -13,10 +14,10 @@ type RedisDB struct {
 
 func NewRedisDB(config *config.Config, root *Repositories) (IRepository, error) {
 	redisOption := redis.Options{
-		Addr:      config.Repositories["redis-db"]["datasource"].(string),
-		Password:  config.Repositories["redis-db"]["pass"].(string),
-		DB:        0,
-		TLSConfig: &tls.Config{InsecureSkipVerify: true},
+		Addr:     config.Repositories["redis-db"]["datasource"].(string),
+		Password: config.Repositories["redis-db"]["pass"].(string),
+		DB:       0,
+		// TLSConfig: &tls.Config{InsecureSkipVerify: false},
 	}
 
 	client := redis.NewClient(&redisOption)
