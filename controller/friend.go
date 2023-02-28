@@ -1,16 +1,13 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 	"go-common/klay/elog"
 	"net/http"
-	"os"
 
 	config "community/conf"
 	"community/model"
 	"community/protocol"
-	aws "community/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +39,7 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 // @Accept json
 // @Produce json
 // @Success 200 {object} protocol.FriendPostListResp
-// @Router /friend/v1/post/list [get]
+// @Router /v1/friend/post/list [get]
 func (r *Friend) GetFriendPost(c *gin.Context) {
 	var friendPostList []protocol.FriendPost
 
@@ -51,7 +48,6 @@ func (r *Friend) GetFriendPost(c *gin.Context) {
 		r.ctl.RespError(c, nil, http.StatusNotFound, err)
 		return
 	}
-
 	// 성공 응답
 	r.ctl.RespOK(c, &protocol.FriendPostListResp{
 		RespHeader:     protocol.NewRespHeader(protocol.Success),
@@ -59,50 +55,98 @@ func (r *Friend) GetFriendPost(c *gin.Context) {
 	})
 }
 
-func (p *Friend) UpdatePost(c *gin.Context) {
-	id := c.Param("id")
-	descripiton := c.PostForm("descripiton")
-	c.JSON(200, gin.H{"result": descripiton, id: id})
-}
-
-func (p *Friend) DeletePost(c *gin.Context) {
-	id := c.Param("id")
-	result, err := p.communityDB.DeleteOneById(id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"result": errors.New("error")})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"result": result})
-}
-
+// CreateFriendPost
+// @Summary 친국찾기 게시물 등록
+// @Tags friend
+// @Accept json
+// @Produce json
+// @Param author formData string true "author"
+// @Param description formData string true "description"
+// @Param file formData file true "file"
+// @Router /v1/friend/post [post]
 func (p *Friend) CreatePost(c *gin.Context) {
 	// shouldbind로 묶어볼 수 있으면 묶기
+	// @Param formData formData protocol.PostReq true "Body with file "
 	author := c.PostForm("author")
-	descripiton := c.PostForm("text")
-
-	// Get image -> images
+	description := c.PostForm("description")
 	image, err := c.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 		return
 	}
 
-	// toml로 관리하기
-	s3 := aws.S3Info{AwsS3Region: "", AwsAccessKey: "", AwsSecretKey: "", BucketName: ""}
-	errs := s3.SetS3ConfigByKey()
-	if errs != nil {
+	postInfo := protocol.PostReq{Author: author, Description: description, ImageName: image.Filename}
+	dbErr := p.communityDB.CreateFriendPost(postInfo)
+	if dbErr != nil {
+		p.ctl.RespError(c, nil, http.StatusBadRequest, "CreateFriendPost", err.Error())
+		return
 	}
-	file, err := image.Open()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer file.Close()
-	s3.UploadFile(file, image.Filename, "cats")
 
-	c.JSON(200, gin.H{
-		"author": author,
-		"image":  "123",
-		"text":   descripiton,
+	p.ctl.RespOK(c, &protocol.FriendPostCreateRes{
+		RespHeader: protocol.NewRespHeader(protocol.Success),
+		Stat:       1,
+	})
+	// toml로 관리하기
+	// s3 := aws.S3Info{AwsS3Region: "", AwsAccessKey: "", AwsSecretKey: "", BucketName: ""}
+	// errs := s3.SetS3ConfigByKey()
+	// if errs != nil {
+	// }
+	// file, err := image.Open()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(1)
+	// }
+	// defer file.Close()
+	// s3.UploadFile(file, image.Filename, "cats")
+}
+
+// UpdateFriendPostInfo
+// @Summary 친국찾기 게시물 수정
+// @Tags friend
+// @Accept json
+// @Produce json
+// @Param requestBody body protocol.PostReq true "resposne body"
+// @Param id path string true "post id"
+// @Router /v1/friend/post/{id} [put]
+func (p *Friend) UpdateFriendPostInfo(c *gin.Context) {
+	id := c.Param("id")
+
+	req := protocol.PostReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		p.ctl.RespError(c, &req, http.StatusUnprocessableEntity, "ShouldBindJSON", err)
+		return
+	}
+
+	// db update
+	err := p.communityDB.UpdateFriendPostOneById(id, req)
+	if err != nil {
+		p.ctl.RespError(c, nil, http.StatusBadRequest, "UpdateReviewPost", err.Error())
+		return
+	}
+
+	p.ctl.RespOK(c, &protocol.ReviewPostUpdateRes{
+		RespHeader: protocol.NewRespHeader(protocol.Success),
+		Stat:       1,
+	})
+}
+
+// DeleteFriendPostInfo
+// @Summary 친국찾기 게시물 소프트삭제
+// @Tags friend
+// @Accept json
+// @Produce json
+// @Param id path string true "post id"
+// @Router /v1/friend/post/{id} [delete]
+func (p *Friend) DeleteFriendPost(c *gin.Context) {
+	id := c.Param("id")
+	err := p.communityDB.DeleteFriendPostOneById(id)
+	if err != nil {
+		p.ctl.RespError(c, nil, http.StatusBadRequest, "UpdateReviewPost", err.Error())
+		return
+	}
+
+	p.ctl.RespOK(c, &protocol.ReviewPostUpdateRes{
+		RespHeader: protocol.NewRespHeader(protocol.Success),
+		Stat:       1,
 	})
 }

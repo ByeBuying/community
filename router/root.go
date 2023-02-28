@@ -72,7 +72,7 @@ func (p *Router) Idx() *gin.Engine {
 		c.File("./public/image/test.png")
 		// c.JSON(200, gin.H{"result": "ok"})
 	})
-	friend := e.Group("friend/v1")
+	friend := e.Group("v1/friend/")
 	{
 		// 1. 기대코드보고 리팩토리 진행
 		// 2. S3 공통모듈로 빼기 - 완료
@@ -82,8 +82,8 @@ func (p *Router) Idx() *gin.Engine {
 
 		friend.GET("/post/list", p.friendControl.GetFriendPost)
 		friend.POST("post", p.friendControl.CreatePost)
-		friend.PUT("post/:id", p.friendControl.UpdatePost)
-		friend.DELETE("post/:id", p.friendControl.DeletePost)
+		friend.PUT("post/:id", p.friendControl.UpdateFriendPostInfo)
+		friend.DELETE("post/:id", p.friendControl.DeleteFriendPost)
 	} // api path
 
 	// api path

@@ -2,7 +2,6 @@ package model
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"go-common/klay/elog"
 	"time"
@@ -70,7 +69,6 @@ func (p *CommunityDB) Start() error {
 }
 
 func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPost) error {
-
 	filter := bson.M{
 		"stat": 1,
 	}
@@ -86,60 +84,73 @@ func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPost) error {
 	}
 }
 
-func (p *CommunityDB) DeleteOneById(id string) (bool, error) {
-	uuid, err := primitive.ObjectIDFromHex(id)
+func (p *CommunityDB) CreateFriendPost(req protocol.PostReq) error {
+	post := protocol.FriendPost{
+		Id:        primitive.NewObjectID(),
+		UserId:    "1",
+		Content:   req.Description,
+		ImageUrl:  req.ImageName,
+		Likes:     0,
+		LikeUsers: []string{},
+		CreateAt:  time.Now(),
+		UpdateAt:  time.Now(),
+		Stat:      1,
+	}
+	_, err := p.collectionPostInfo.InsertOne(context.Background(), post)
 	if err != nil {
-		panic(err)
+		return err
+	} else {
+		return nil
+	}
+}
+
+func (p *CommunityDB) DeleteFriendPostOneById(id string) error {
+	convertId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
 	}
 	filter := bson.M{
-		"_id": uuid,
+		"_id": convertId,
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"deleted_at": time.Now(),
+			"stat":      0,
+			"update_at": time.Now(),
 		},
 	}
 	// softDelete
-	res, err := p.collectionPostInfo.UpdateOne(context.TODO(), filter, update)
+	_, err = p.collectionPostInfo.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return err
+	} else {
+		return nil
 	}
-	if res.ModifiedCount == 1 {
-		return true, nil
-	}
-	return false, errors.New("error")
 }
 
-func (p *CommunityDB) UpdateOneById(id string, description string) (bool, error) {
-	uuid, err := primitive.ObjectIDFromHex(id)
+func (p *CommunityDB) UpdateFriendPostOneById(id string, req protocol.PostReq) error {
+	convertId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 	filter := bson.M{
-		"_id": uuid,
+		"_id":  convertId,
+		"stat": 1,
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"description": description,
+			"author":    req.Author,
+			"content":   req.Description,
+			"update_at": time.Now(),
 		},
 	}
-	// softDelete
-	res, err := p.collectionPostInfo.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	if res.ModifiedCount == 1 {
-		return true, nil
-	}
-	return false, errors.New("error")
-}
 
-func (p *CommunityDB) CreatePost(req protocol.PostWriteReq) error {
-	//result := protocol.PostInfo{}
-	//_, err := p.collectionPostInfo.InsertOne(context.Background(), )
-	return nil
+	_, err = p.collectionPostInfo.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
 }
 
 func (p *CommunityDB) GetReviewList(result *[]protocol.ReviewPost) error {
