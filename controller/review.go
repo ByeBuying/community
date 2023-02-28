@@ -41,7 +41,7 @@ func NewReview(h *Controller, rep *model.Repositories) *Review {
 // @Accept json
 // @Produce json
 // @Success 200 {object} protocol.ReviewListResp
-// @Router /napi/v1/review/list [get]
+// @Router /review/v1/post/list [get]
 func (r *Review) GetPostList(c *gin.Context) {
 	var reviewInfoList []protocol.ReviewPost
 
@@ -66,7 +66,7 @@ func (r *Review) GetPostList(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} protocol.ReviewDetailResp
-// @Router /napi/v1/review/{id} [get]
+// @Router /review/v1/post/{id} [get]
 func (r *Review) GetPostDetail(c *gin.Context) {
 	id := c.Param("id")
 
@@ -92,7 +92,7 @@ func (r *Review) GetPostDetail(c *gin.Context) {
 // @Produce json
 // @Param requestBody body protocol.ReviewPostReq true "resposne body"
 // @Success 200 {object} protocol.ReviewPostCreateRes
-// @Router /napi/v1/review [post]
+// @Router /review/v1/post [post]
 func (r *Review) CreatePostInfo(c *gin.Context) {
 	req := protocol.ReviewPostReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -125,7 +125,7 @@ func (r *Review) CreatePostInfo(c *gin.Context) {
 // @Produce json
 // @Param requestBody body protocol.ReviewPostReq true "resposne body"
 // @Success 200 {object} protocol.ReviewPostUpdateRes
-// @Router /napi/v1/review/{id} [put]
+// @Router /review/v1/post/{id} [put]
 func (r *Review) UpdatePostInfo(c *gin.Context) {
 	id := c.Param("id")
 
@@ -161,7 +161,7 @@ func (r *Review) UpdatePostInfo(c *gin.Context) {
 // @Produce json
 // @Param requestBody body protocol.ReviewPostReq true "resposne body"
 // @Success 200 {object} protocol.ReviewPostDeleteRes
-// @Router /napi/v1/review/{id} [patch]
+// @Router /review/v1/post/{id} [patch]
 func (r *Review) DeletePostInfo(c *gin.Context) {
 	id := c.Param("id")
 
