@@ -39,7 +39,7 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 // @Accept json
 // @Produce json
 // @Success 200 {object} protocol.FriendPostListResp
-// @Router /v1/friend/post/list [get]
+// @Router /v1/friend/list [get]
 func (r *Friend) GetFriendPost(c *gin.Context) {
 	var friendPostList []protocol.FriendPost
 
@@ -56,15 +56,15 @@ func (r *Friend) GetFriendPost(c *gin.Context) {
 }
 
 // CreateFriendPost
-// @Summary 친국찾기 게시물 등록
+// @Summary 친구찾기 게시물 등록
 // @Tags friend
 // @Accept json
 // @Produce json
 // @Param author formData string true "author"
 // @Param description formData string true "description"
 // @Param file formData file true "file"
-// @Router /v1/friend/post [post]
-func (p *Friend) CreatePost(c *gin.Context) {
+// @Router /v1/friend [post]
+func (p *Friend) CreateFriendPost(c *gin.Context) {
 	// shouldbind로 묶어볼 수 있으면 묶기
 	// @Param formData formData protocol.PostReq true "Body with file "
 	author := c.PostForm("author")
@@ -78,7 +78,7 @@ func (p *Friend) CreatePost(c *gin.Context) {
 	postInfo := protocol.PostReq{Author: author, Description: description, ImageName: image.Filename}
 	dbErr := p.communityDB.CreateFriendPost(postInfo)
 	if dbErr != nil {
-		p.ctl.RespError(c, nil, http.StatusBadRequest, "CreateFriendPost", err.Error())
+		p.ctl.RespError(c, nil, http.StatusInternalServerError, "CreateFriendPost", err.Error())
 		return
 	}
 
@@ -86,7 +86,7 @@ func (p *Friend) CreatePost(c *gin.Context) {
 		RespHeader: protocol.NewRespHeader(protocol.Success),
 		Stat:       1,
 	})
-	// toml로 관리하기
+
 	// s3 := aws.S3Info{AwsS3Region: "", AwsAccessKey: "", AwsSecretKey: "", BucketName: ""}
 	// errs := s3.SetS3ConfigByKey()
 	// if errs != nil {
@@ -101,14 +101,14 @@ func (p *Friend) CreatePost(c *gin.Context) {
 }
 
 // UpdateFriendPostInfo
-// @Summary 친국찾기 게시물 수정
+// @Summary 친구찾기 게시물 수정
 // @Tags friend
 // @Accept json
 // @Produce json
 // @Param requestBody body protocol.PostReq true "resposne body"
 // @Param id path string true "post id"
-// @Router /v1/friend/post/{id} [put]
-func (p *Friend) UpdateFriendPostInfo(c *gin.Context) {
+// @Router /v1/friend/{id} [put]
+func (p *Friend) UpdateFriendPost(c *gin.Context) {
 	id := c.Param("id")
 
 	req := protocol.PostReq{}
@@ -120,7 +120,7 @@ func (p *Friend) UpdateFriendPostInfo(c *gin.Context) {
 	// db update
 	err := p.communityDB.UpdateFriendPostOneById(id, req)
 	if err != nil {
-		p.ctl.RespError(c, nil, http.StatusBadRequest, "UpdateReviewPost", err.Error())
+		p.ctl.RespError(c, nil, http.StatusInternalServerError, "UpdateReviewPost", err.Error())
 		return
 	}
 
@@ -131,17 +131,17 @@ func (p *Friend) UpdateFriendPostInfo(c *gin.Context) {
 }
 
 // DeleteFriendPostInfo
-// @Summary 친국찾기 게시물 소프트삭제
+// @Summary 친구찾기 게시물 소프트삭제
 // @Tags friend
 // @Accept json
 // @Produce json
 // @Param id path string true "post id"
-// @Router /v1/friend/post/{id} [delete]
+// @Router /v1/friend/{id} [delete]
 func (p *Friend) DeleteFriendPost(c *gin.Context) {
 	id := c.Param("id")
 	err := p.communityDB.DeleteFriendPostOneById(id)
 	if err != nil {
-		p.ctl.RespError(c, nil, http.StatusBadRequest, "UpdateReviewPost", err.Error())
+		p.ctl.RespError(c, nil, http.StatusInternalServerError, "Delete FriendPost", err.Error())
 		return
 	}
 
