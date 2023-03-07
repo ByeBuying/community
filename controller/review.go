@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"go-common/klay/elog"
 	"net/http"
 
@@ -18,6 +17,7 @@ type Review struct {
 
 	// DB
 	communityDB *model.CommunityDB
+	authRedisDB *model.AuthRedisDB
 }
 
 // NewReview 객체 생성
@@ -27,7 +27,7 @@ func NewReview(h *Controller, rep *model.Repositories) *Review {
 		cfg: h.config,
 	}
 
-	if err := rep.Get(&r.communityDB); err != nil {
+	if err := rep.Get(&r.communityDB, &r.authRedisDB); err != nil {
 		elog.Crit("newCommunity", "error", err)
 	}
 
@@ -45,7 +45,6 @@ func NewReview(h *Controller, rep *model.Repositories) *Review {
 func (r *Review) GetPostList(c *gin.Context) {
 	var reviewInfoList []protocol.ReviewPost
 
-	fmt.Println(&reviewInfoList, "review")
 	err := r.communityDB.GetReviewList(&reviewInfoList)
 	if err != nil {
 		r.ctl.RespError(c, nil, http.StatusNotFound, err)

@@ -17,9 +17,9 @@ type Router struct {
 
 	communityControl *controller.Community
 
-	friendControl *controller.Friend
-
-	reviewControl *controller.Review
+	friendControl  *controller.Friend
+	reviewControl  *controller.Review
+	accountControl *controller.Account
 }
 
 func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, error) {
@@ -28,24 +28,10 @@ func NewRouter(config *config.Config, ctl *controller.Controller) (*Router, erro
 		communityControl: ctl.GetCommunityHandler(),
 		reviewControl:    ctl.GetReviewHandler(),
 		friendControl:    ctl.GetFriendHandler(),
+		accountControl:   ctl.GetAccountHandler(),
 	}
 
 	return r, nil
-}
-
-// func CORS() gin.HandlerFunc {
-func CORS() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Forwarded-For, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	}
 }
 
 func (p *Router) Idx() *gin.Engine {
@@ -74,12 +60,6 @@ func (p *Router) Idx() *gin.Engine {
 	})
 	friend := e.Group("friend/v1")
 	{
-		// 1. 기대코드보고 리팩토리 진행
-		// 2. S3 공통모듈로 빼기 - 완료
-		// 3. 좋아요 / 댓글 구현
-		// 4. 스웨거 정리
-		// 5. 테스트코드 정리하고 해보기
-
 		friend.GET("/post/list", p.friendControl.GetFriendPost)
 		friend.POST("post", p.friendControl.CreatePost)
 		friend.PUT("post/:id", p.friendControl.UpdatePost)
@@ -98,7 +78,7 @@ func (p *Router) Idx() *gin.Engine {
 	review := e.Group("/review/v1/post")
 	{
 		// TODO middleware 추가
-		review.GET("/list", p.reviewControl.GetPostList)
+		review.GET("/list", p.CheckUser(), p.reviewControl.GetPostList)
 		review.GET("/:id", p.reviewControl.GetPostDetail)
 		review.POST("", p.reviewControl.CreatePostInfo)
 		review.PUT("/:id", p.reviewControl.UpdatePostInfo)
