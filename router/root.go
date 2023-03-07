@@ -44,31 +44,19 @@ func (p *Router) Idx() *gin.Engine {
 	e.Use(recovery.GinRecovery(p.config.Common.ServiceId))
 	e.Use(CORS())
 
-	// e.GET("/health", p.healthControl.Check)
-	// swagger
-	docs.SwaggerInfo.Host = "localhost:8080" // swagger 정보 등록
+	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.Title = "community"
-	url := ginSwg.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definitionv
+	url := ginSwg.URL("http://localhost:8080/swagger/doc.json")
 	e.GET("/swagger/:any", ginSwg.WrapHandler(swgFiles.Handler, url))
 
-	//if p.config.Common.ServiceId == "alpha" {
-	//	e.GET("/swagger/:any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	//}
-	e.GET("/image", func(c *gin.Context) {
-		c.File("./public/image/test.png")
-		// c.JSON(200, gin.H{"result": "ok"})
-	})
-	friend := e.Group("friend/v1")
+	friend := e.Group("v1/friend/")
 	{
-		friend.GET("/post/list", p.friendControl.GetFriendPost)
-		friend.POST("post", p.friendControl.CreatePost)
-		friend.PUT("post/:id", p.friendControl.UpdatePost)
-		friend.DELETE("post/:id", p.friendControl.DeletePost)
-	} // api path
+		friend.GET("/list", p.friendControl.GetFriendPost)
+		friend.POST("/", p.friendControl.CreateFriendPost)
+		friend.PUT("/:id", p.friendControl.UpdateFriendPost)
+		friend.DELETE("/:id", p.friendControl.DeleteFriendPost)
+	}
 
-	// api path
-
-	// community
 	community := e.Group("/napi/v1/community")
 	{
 		community.POST("/post", p.communityControl.Post)

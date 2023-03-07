@@ -18,7 +18,20 @@ type FriendPost struct {
 	Stat      int                `json:"stat" bson:"stat"`
 }
 
+// todo 나중에 스키마랑 res / req struct 구분
+// ---- 스키마 구분  ----
+
+type PostReq struct {
+	Author      string
+	Description string
+	ImageName   string
+}
 type FriendPostListResp struct {
 	*RespHeader
 	FriendPostList []FriendPost `json:"friendPostList"`
+}
+
+type FriendPostCreateRes struct {
+	*RespHeader
+	Stat int `json:"stat"`
 }
