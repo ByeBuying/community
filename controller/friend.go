@@ -150,3 +150,29 @@ func (p *Friend) DeleteFriendPost(c *gin.Context) {
 		Stat:       1,
 	})
 }
+
+// CreateComment
+// @Summary 친구찾기 게시물 댓글 생성
+// @Tags friend
+// @Accept json
+// @Produce json
+// @Param requestBody body protocol.FriendCommentReq true "resposne body"
+// @Router /v1/friend/comment [post]
+func (p *Friend) CreateComment(c *gin.Context) {
+	req := protocol.FriendCommentReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		p.ctl.RespError(c, &req, http.StatusUnprocessableEntity, "ShouldBindJSON", err)
+		return
+	}
+
+	err := p.communityDB.CreateComment(req)
+	if err != nil {
+		p.ctl.RespError(c, nil, http.StatusInternalServerError, "CreateComment", err.Error())
+		return
+	}
+
+	p.ctl.RespOK(c, &protocol.FriendPostCreateRes{
+		RespHeader: protocol.NewRespHeader(protocol.Success),
+		Stat:       1,
+	})
+}

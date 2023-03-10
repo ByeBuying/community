@@ -50,6 +50,7 @@ func NewCommunityDB(config *conf.Config, root *Repositories) (IRepository, error
 		r.collectionCommentInfo = db.Collection("comment_info")
 		r.collectionReviewInfo = db.Collection("review_info")
 		r.collectionFriendInfo = db.Collection("friend_info")
+
 	}
 
 	elog.Trace("load repository : CommunityDB")
@@ -92,11 +93,12 @@ func (p *CommunityDB) CreateFriendPost(req protocol.PostReq) error {
 		ImageUrl:  req.ImageName,
 		Likes:     0,
 		LikeUsers: []string{},
+		Comments:  []string{},
 		CreateAt:  time.Now(),
 		UpdateAt:  time.Now(),
 		Stat:      1,
 	}
-	_, err := p.collectionPostInfo.InsertOne(context.Background(), post)
+	_, err := p.collectionCommentInfo.InsertOne(context.Background(), post)
 	if err != nil {
 		return err
 	} else {
@@ -151,6 +153,46 @@ func (p *CommunityDB) UpdateFriendPostOneById(id string, req protocol.PostReq) e
 	} else {
 		return nil
 	}
+}
+
+func (p *CommunityDB) CreateComment(req protocol.FriendCommentReq) error {
+	// comment를 생성해주고 저장하기
+	comment := protocol.FriendComment{
+		Id:           primitive.NewObjectID(),
+		UserId:       "userId",
+		PostSelector: "friend",
+		PostId:       "640842423455da0cf1f46d72",
+		Content:      req.Content,
+		CreateAt:     time.Now(),
+		UpdateAt:     time.Now(),
+		Stat:         1,
+	}
+
+	insertRes, err := p.collectionCommentInfo.InsertOne(context.Background(), comment)
+	if err != nil {
+		return err
+	} else {
+		convertId, err := primitive.ObjectIDFromHex(comment.PostId)
+		if err != nil {
+			return err
+		}
+
+		filter := bson.M{
+			"_id": convertId,
+		}
+		update := bson.M{
+			"$push": bson.M{
+				"comments": insertRes.InsertedID.(primitive.ObjectID).String(),
+			},
+		}
+		_, err = p.collectionPostInfo.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			fmt.Println(err, "error")
+			return err
+		}
+		return nil
+	}
+	// commentId를 post(Comments)에 담아두기
 }
 
 func (p *CommunityDB) GetReviewList(result *[]protocol.ReviewPost) error {
