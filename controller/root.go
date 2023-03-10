@@ -18,6 +18,7 @@ type Controller struct {
 	communityController *Community
 	reviewController    *Review
 	friendController    *Friend
+	accountController   *Account
 }
 
 func New(config *config.Config, port int, rep *model.Repositories) (*Controller, error) {
@@ -31,6 +32,7 @@ func New(config *config.Config, port int, rep *model.Repositories) (*Controller,
 	r.communityController = NewCommunity(r, rep)
 	r.reviewController = NewReview(r, rep)
 	r.friendController = NewFriend(r, rep)
+	r.accountController = NewAccount(r, rep)
 
 	return r, nil
 }
@@ -61,4 +63,8 @@ func (p *Controller) GetReviewHandler() *Review {
 
 func (p *Controller) GetFriendHandler() *Friend {
 	return p.friendController
+}
+
+func (p *Controller) GetAccountHandler() *Account {
+	return p.accountController
 }
