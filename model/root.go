@@ -32,7 +32,9 @@ func NewRepositories(cfg *conf.Config) (*Repositories, error) {
 		config      *conf.Config
 	}{
 		{NewRedisDB, cfg},
+		{NewAuthRedis, cfg},
 		{NewCommunityDB, cfg},
+		{NewUserDB, cfg},
 		//{NewProdu, cfg},
 	} {
 		if err := r.Register(c.constructor, c.config); err != nil {

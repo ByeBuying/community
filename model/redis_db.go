@@ -36,3 +36,26 @@ func NewRedisDB(config *config.Config, root *Repositories) (IRepository, error) 
 func (p *RedisDB) Start() error {
 	return nil
 }
+
+func (p *RedisDB) GetCache(key string) (string, error) {
+
+	user, err := p.client.Get(key).Result()
+	if err != nil {
+		return "", err
+	}
+
+	return user, nil
+}
+
+func (p *RedisDB) DeleteCache(key string) error {
+
+	if err := p.client.Del(key).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *RedisDB) HGetMember(key string) string {
+	res := p.client.HGet("member", key)
+	return res.Val()
+}
