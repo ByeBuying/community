@@ -69,14 +69,23 @@ func (p *CommunityDB) Start() error {
 	}()
 }
 
-func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPost) error {
-	filter := bson.M{
-		"stat": 1,
+func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPostAndComments) error {
+	// filter := bson.M{
+	// 	"stat": 1,
+	// }
+	// sort := bson.D{{"create_at", 1}}
+	// findOptions := options.Find().SetSort(sort)
+	// matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "friend_comment.stat", Value: 1}}}}
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "stat", Value: 1}}}}
+	lookupStage := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "comment_info"},
+			{Key: "localField", Value: "comments"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "friend_comment"},
+		}},
 	}
-	sort := bson.D{{"create_at", 1}}
-	findOptions := options.Find().SetSort(sort)
-
-	if cursor, err := p.collectionFriendInfo.Find(context.Background(), filter, findOptions); err != nil {
+	if cursor, err := p.collectionPostInfo.Aggregate(context.Background(), mongo.Pipeline{lookupStage, matchStage}); err != nil {
 		return err
 	} else {
 		defer cursor.Close(context.Background())
@@ -155,13 +164,27 @@ func (p *CommunityDB) UpdateFriendPostOneById(id string, req protocol.PostReq) e
 	}
 }
 
-func (p *CommunityDB) CreateComment(req protocol.FriendCommentReq) error {
+func HexToObjectId(_id string) (primitive.ObjectID, error) {
+	fmt.Println(_id)
+	convertId, err := primitive.ObjectIDFromHex(_id)
+	if err != nil {
+		fmt.Println("여기인것인가?")
+		return convertId, err
+	}
+	return convertId, nil
+}
+
+func (p *CommunityDB) CreateComment(_id string, req protocol.FriendCommentReq) error {
 	// comment를 생성해주고 저장하기
+	convertId, err := HexToObjectId(_id)
+	if err != nil {
+		return err
+	}
 	comment := protocol.FriendComment{
 		Id:           primitive.NewObjectID(),
 		UserId:       "userId",
 		PostSelector: "friend",
-		PostId:       "640842423455da0cf1f46d72",
+		PostId:       convertId,
 		Content:      req.Content,
 		CreateAt:     time.Now(),
 		UpdateAt:     time.Now(),
@@ -172,17 +195,13 @@ func (p *CommunityDB) CreateComment(req protocol.FriendCommentReq) error {
 	if err != nil {
 		return err
 	} else {
-		convertId, err := primitive.ObjectIDFromHex(comment.PostId)
-		if err != nil {
-			return err
-		}
 
 		filter := bson.M{
 			"_id": convertId,
 		}
 		update := bson.M{
 			"$push": bson.M{
-				"comments": insertRes.InsertedID.(primitive.ObjectID).String(),
+				"comments": insertRes.InsertedID,
 			},
 		}
 		_, err = p.collectionPostInfo.UpdateOne(context.Background(), filter, update)

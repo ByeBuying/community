@@ -41,13 +41,15 @@ func NewFriend(h *Controller, rep *model.Repositories) *Friend {
 // @Success 200 {object} protocol.FriendPostListResp
 // @Router /v1/friend/list [get]
 func (r *Friend) GetFriendPost(c *gin.Context) {
-	var friendPostList []protocol.FriendPost
+	var friendPostList []protocol.FriendPostAndComments
 
 	err := r.communityDB.GetFriendPostList(&friendPostList)
+	fmt.Println(friendPostList, "friend post list")
 	if err != nil {
 		r.ctl.RespError(c, nil, http.StatusNotFound, err)
 		return
 	}
+
 	// 성공 응답
 	r.ctl.RespOK(c, &protocol.FriendPostListResp{
 		RespHeader:     protocol.NewRespHeader(protocol.Success),
@@ -156,16 +158,18 @@ func (p *Friend) DeleteFriendPost(c *gin.Context) {
 // @Tags friend
 // @Accept json
 // @Produce json
+// @Param id path string true "post id"s
 // @Param requestBody body protocol.FriendCommentReq true "resposne body"
-// @Router /v1/friend/comment [post]
+// @Router /v1/friend/comment/{id}  [post]
 func (p *Friend) CreateComment(c *gin.Context) {
+	id := c.Param("id")
 	req := protocol.FriendCommentReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ctl.RespError(c, &req, http.StatusUnprocessableEntity, "ShouldBindJSON", err)
 		return
 	}
 
-	err := p.communityDB.CreateComment(req)
+	err := p.communityDB.CreateComment(id, req)
 	if err != nil {
 		p.ctl.RespError(c, nil, http.StatusInternalServerError, "CreateComment", err.Error())
 		return

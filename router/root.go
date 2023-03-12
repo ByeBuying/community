@@ -55,7 +55,7 @@ func (p *Router) Idx() *gin.Engine {
 		friend.POST("/", p.friendControl.CreateFriendPost)
 		friend.PUT("/:id", p.friendControl.UpdateFriendPost)
 		friend.DELETE("/:id", p.friendControl.DeleteFriendPost)
-		friend.POST("comment", p.friendControl.CreateComment)
+		friend.POST("comment/:id", p.friendControl.CreateComment)
 	}
 
 	community := e.Group("/napi/v1/community")
