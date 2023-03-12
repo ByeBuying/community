@@ -50,6 +50,7 @@ func NewCommunityDB(config *conf.Config, root *Repositories) (IRepository, error
 		r.collectionCommentInfo = db.Collection("comment_info")
 		r.collectionReviewInfo = db.Collection("review_info")
 		r.collectionFriendInfo = db.Collection("friend_info")
+
 	}
 
 	elog.Trace("load repository : CommunityDB")
@@ -68,14 +69,23 @@ func (p *CommunityDB) Start() error {
 	}()
 }
 
-func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPost) error {
-	filter := bson.M{
-		"stat": 1,
+func (p *CommunityDB) GetFriendPostList(result *[]protocol.FriendPostAndComments) error {
+	// filter := bson.M{
+	// 	"stat": 1,
+	// }
+	// sort := bson.D{{"create_at", 1}}
+	// findOptions := options.Find().SetSort(sort)
+	// matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "friend_comment.stat", Value: 1}}}}
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "stat", Value: 1}}}}
+	lookupStage := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "comment_info"},
+			{Key: "localField", Value: "comments"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "friend_comment"},
+		}},
 	}
-	sort := bson.D{{"create_at", 1}}
-	findOptions := options.Find().SetSort(sort)
-
-	if cursor, err := p.collectionFriendInfo.Find(context.Background(), filter, findOptions); err != nil {
+	if cursor, err := p.collectionPostInfo.Aggregate(context.Background(), mongo.Pipeline{lookupStage, matchStage}); err != nil {
 		return err
 	} else {
 		defer cursor.Close(context.Background())
@@ -92,11 +102,12 @@ func (p *CommunityDB) CreateFriendPost(req protocol.PostReq) error {
 		ImageUrl:  req.ImageName,
 		Likes:     0,
 		LikeUsers: []string{},
+		Comments:  []string{},
 		CreateAt:  time.Now(),
 		UpdateAt:  time.Now(),
 		Stat:      1,
 	}
-	_, err := p.collectionPostInfo.InsertOne(context.Background(), post)
+	_, err := p.collectionCommentInfo.InsertOne(context.Background(), post)
 	if err != nil {
 		return err
 	} else {
@@ -151,6 +162,56 @@ func (p *CommunityDB) UpdateFriendPostOneById(id string, req protocol.PostReq) e
 	} else {
 		return nil
 	}
+}
+
+func HexToObjectId(_id string) (primitive.ObjectID, error) {
+	fmt.Println(_id)
+	convertId, err := primitive.ObjectIDFromHex(_id)
+	if err != nil {
+		fmt.Println("여기인것인가?")
+		return convertId, err
+	}
+	return convertId, nil
+}
+
+func (p *CommunityDB) CreateComment(_id string, req protocol.FriendCommentReq) error {
+	// comment를 생성해주고 저장하기
+	convertId, err := HexToObjectId(_id)
+	if err != nil {
+		return err
+	}
+	comment := protocol.FriendComment{
+		Id:           primitive.NewObjectID(),
+		UserId:       "userId",
+		PostSelector: "friend",
+		PostId:       convertId,
+		Content:      req.Content,
+		CreateAt:     time.Now(),
+		UpdateAt:     time.Now(),
+		Stat:         1,
+	}
+
+	insertRes, err := p.collectionCommentInfo.InsertOne(context.Background(), comment)
+	if err != nil {
+		return err
+	} else {
+
+		filter := bson.M{
+			"_id": convertId,
+		}
+		update := bson.M{
+			"$push": bson.M{
+				"comments": insertRes.InsertedID,
+			},
+		}
+		_, err = p.collectionPostInfo.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			fmt.Println(err, "error")
+			return err
+		}
+		return nil
+	}
+	// commentId를 post(Comments)에 담아두기
 }
 
 func (p *CommunityDB) GetReviewList(result *[]protocol.ReviewPost) error {
